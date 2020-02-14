@@ -17,7 +17,7 @@ namespace TinyCrm.Core.Services
         {
            context=dbContext;
         }
-        
+        private List<Product> ProductsList = new List<Product>();
         /// <summary>
         /// 
         /// </summary>
@@ -127,6 +127,40 @@ namespace TinyCrm.Core.Services
                 Sum(c => c.InStock);
 
             return sum;
+        }
+        public List<Product> SearchProduct
+            (SearchProductOptions searchProductOptions)
+        {
+            if (searchProductOptions == null)
+            {
+                return null;
+            }
+
+            var query = context.Set<Product>().AsQueryable();
+
+            
+            if (searchProductOptions.Description != null)
+            {
+                query = query.
+                Where(c => c.Description == searchProductOptions.Description);
+            }
+            if (searchProductOptions != null &&
+                searchProductOptions.MaxPrice > 0)
+            {
+                query = query.
+                Where(c => c.Price <= searchProductOptions.MaxPrice);
+            }
+
+            if (searchProductOptions != null &&
+                searchProductOptions.MinPrice > 0)
+            {
+                query = query.
+                Where(c => c.Price >= searchProductOptions.MinPrice);
+            }
+            List<Product> products = query.ToList();
+            return products;
+
+
         }
     }
 }

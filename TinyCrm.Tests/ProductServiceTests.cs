@@ -34,5 +34,18 @@ namespace TinyCrm.Tests
             Assert.NotNull(result.Data);
             Assert.Equal(Core.StatusCode.Success, result.ErrorCode);
         }
+        [Fact]
+        public void SearchProduct_Success()
+        {
+            
+            var options = new SearchProductOptions()
+            {
+                MaxPrice = 500m,
+                MinPrice = 20m
+            };
+
+            var products = products_.SearchProduct(options);
+            Assert.NotEmpty(products);
+        }
     }
 }

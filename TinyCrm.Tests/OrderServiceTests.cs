@@ -16,6 +16,7 @@ namespace TinyCrm.Tests
         private ICustomerService customer_;
         private IProductService products_;
         private TinyCrmDbContext context_;
+        private IOrderService orders_;
 
         public OrderServiceTests(
             TinyCrmFixture fixture)
@@ -23,6 +24,7 @@ namespace TinyCrm.Tests
             context_ = fixture.Context;
             customer_ = fixture.Customers;
             products_ = fixture.Products;
+            orders_ = fixture.Orders;
         }
 
         [Fact]
@@ -100,6 +102,40 @@ namespace TinyCrm.Tests
                 .SelectMany(o => o.OrderProducts)
                 .Select(o => o.Product)
                 .ToList();
+        }
+        [Fact]
+        public void CreateOrder_Success()
+        {
+            var orderOptions = new CreateOrderOptions()
+            {
+                Address = "Athens",
+                CustomerId = 1
+            };
+            Assert.NotNull(orderOptions);
+
+            var customerOptions = new SearchCustomerOptions()
+            {
+                VatNumber = "110144538"
+            };
+            var productOptions = new SearchProductOptions()
+            {
+                Id= Guid.Parse("A9BB6ADE-54F0-4E45-B449-08D7B0BD61BE")
+            };
+
+            var order = orders_.CreateOrder(orderOptions,
+                customerOptions, productOptions);
+            Assert.NotNull(order);
+        }
+
+        [Fact]
+        public void SearchOrder_Success()
+        {
+            var options = new SearchOrderOptions()
+            {
+                OrderId=Guid.Parse("90B9BDEF-5532-4691-2B9B-08D7B0E034CE")
+            };
+            var orders = orders_.SearchOrder(options);
+            Assert.NotEmpty(orders);
         }
     }
 }
