@@ -37,12 +37,15 @@ namespace TinyCrm.Core.Model
         /// </summary>
         public string FirstName { get; set; }
         public int Age { get; set; }
+        public decimal LastGross { get; set; }
+        public decimal TotalGross { get; set; }
 
         public List<Order> Orders { get; set; }
 
         public Customer()
         {
             Orders = new List<Order>();
+            TotalGross = TotalGross + LastGross;
         }
     }
 }

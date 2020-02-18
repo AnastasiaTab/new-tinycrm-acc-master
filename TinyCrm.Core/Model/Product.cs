@@ -38,7 +38,8 @@ namespace TinyCrm.Core.Model
 
         public Product()
         {
-            //Id = Guid.NewGuid();
+            int counter=0;
+            counter++;
         }
     }
 }

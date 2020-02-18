@@ -3,13 +3,14 @@ using TinyCrm.Core.Services;
 using TinyCrm.Core.Data;
 
 using Xunit;
+using TinyCrm.Core.Model;
 
 namespace TinyCrm.Tests
 {
     public class ProductServiceTests :
         IClassFixture<TinyCrmFixture>
     {
-        private TinyCrmDbContext  context_;
+        private TinyCrmDbContext context_;
         private IProductService products_;
 
         public ProductServiceTests(
@@ -20,7 +21,7 @@ namespace TinyCrm.Tests
         }
 
         [Fact]
-        public void AddProduct_Success()
+        public Product AddProduct_Success()
         {
             var options = new AddProductOptions()
             {
@@ -33,19 +34,7 @@ namespace TinyCrm.Tests
             Assert.NotNull(result);
             Assert.NotNull(result.Data);
             Assert.Equal(Core.StatusCode.Success, result.ErrorCode);
-        }
-        [Fact]
-        public void SearchProduct_Success()
-        {
-            
-            var options = new SearchProductOptions()
-            {
-                MaxPrice = 500m,
-                MinPrice = 20m
-            };
-
-            var products = products_.SearchProduct(options);
-            Assert.NotEmpty(products);
+            return result.Data;
         }
     }
 }

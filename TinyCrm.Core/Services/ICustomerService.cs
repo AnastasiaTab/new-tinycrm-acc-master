@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Text;
 using TinyCrm.Core.Model;
 using TinyCrm.Core.Model.Options;
+using System.Linq;
 
 namespace TinyCrm.Core.Services
 {
     public interface ICustomerService
     {
-        public List<Customer> Search(
+        public IQueryable<Customer> Search(
             SearchCustomerOptions options);
 
-        public Customer Create(CreateCustomerOptions options);
+        public ApiResult<Customer> Create(CreateCustomerOptions options);
+        public ApiResult<Customer> GetCustomerById(int customerId);
     }
 }

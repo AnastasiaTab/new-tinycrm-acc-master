@@ -9,7 +9,7 @@ namespace TinyCrm.Core.Data
         public TinyCrmDbContext()
         {
             connectionString_ =
-                "Server=localhost;Database=tinycrm_acc_master; Integrated Security=SSPI;Persist Security Info=False;";
+                "Server=localhost;Database=tinycrm_acc_final; Integrated Security=SSPI;Persist Security Info=False;";
         }
 
 

@@ -2,96 +2,113 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TinyCrm.Core.Data;
 using TinyCrm.Core.Model;
 using TinyCrm.Core.Model.Options;
 
 namespace TinyCrm.Core.Services
 {
+
+
     public class OrderService : IOrderService
     {
-        private TinyCrm.Core.Data.TinyCrmDbContext context;
-         
-        public OrderService(Data.TinyCrmDbContext dbContext)
+        private readonly TinyCrmDbContext context_;
+
+        private readonly ICustomerService customer_;
+
+        private readonly IProductService product_;
+
+        public OrderService(
+            TinyCrmDbContext context,
+            ICustomerService customers,
+            IProductService products)
         {
-            context = dbContext;
+            context_ = context;
+            customer_ = customers;
+            product_ = products;
+
         }
-        public Order CreateOrder(CreateOrderOptions options, 
-            SearchCustomerOptions customerOptions,
-            SearchProductOptions productOptions)
+        public ApiResult<Order> CreateOrder(
+            CreateOrderOptions createoptions)
         {
-            if(options == null)
+            if (createoptions == null)
             {
-                return null;
+                return new ApiResult<Order>(
+                    StatusCode.BadRequest, "null options");
             }
-            if (options.CustomerId <=0)
+
+            var cresult = customer_
+                .GetCustomerById(createoptions.CustomerId);
+            if (!cresult.Success)
             {
-                return null;
+                return ApiResult<Order>.Create(cresult);
             }
-            var customers = new CustomerService(context);
-            var newCustomers = customers.
-                Search(customerOptions);
-            var customer = newCustomers.FirstOrDefault();
+
+            var order = new Order();
+
+            foreach (var id in createoptions.ProductIds)
+            {
+                var prodResult = product_
+                     .GetProductById(id);
+
+                if (!prodResult.Success)
+                {
+                    return ApiResult<Order>.Create(
+                        prodResult);
+                }
+
+                order.OrderProducts.Add(
+                    new OrderProduct()
+                    {
+                        Product = prodResult.Data
+                    });
+
+                //order.Customer.LastGross.Equals(prodResult.Data.Price);
+            }
             
-            if (customer == null)
-            {
-                return null;
-            }
+            context_.Add(order);
+            cresult.Data.Orders.Add(order);
+            
+            context_.SaveChanges();
 
-            var products = new ProductService(context);
-            var newProducts = products.
-                SearchProduct(productOptions);
-            var product = newProducts.FirstOrDefault();
-
-            var order = new Order()
-            {
-              DeliveryAddress=options.Address,
-              CustomerId=options.CustomerId,
-              Customer=customer
-            };
-
-
-
-            var op = new OrderProduct()
-            {
-                Order = order,
-                OrderId = order.Id,
-                Product=product,
-                ProductId=product.Id
-            };
-
-            context
-                .Set<Order>()
-                .Add(order);
-            context.SaveChanges();
-            context.
-                Set<OrderProduct>()
-                .Add(op);
-            context.SaveChanges();
-
-            return order;
-
-
+            return ApiResult<Order>.CreateSuccessful(order);
         }
-        public List<Order> SearchOrder
+
+        public ApiResult<IQueryable<Order>> SearchOrder
             (SearchOrderOptions options)
         {
-            if(options == null)
+            if (options == null)
             {
-                return null;
+                return ApiResult<IQueryable<Order>>.CreateUnSuccessful(StatusCode.BadRequest,"null options");
             }
-            var query = context.Set<Order>()
+
+            if (options.OrderId==null
+                && options.CustomerId == null
+                && options.VatNumber == null)
+            {
+                return ApiResult<IQueryable<Order>>.CreateUnSuccessful(StatusCode.BadRequest, "null options");
+            }
+            var query = context_
+                .Set<Order>()
                 .AsQueryable();
-            if(options.CustomerId != null)
+
+            if (options.CustomerId != null)
             {
                 query = query.Where(
-                    c=>c.CustomerId==options.CustomerId);
+                    c => c.CustomerId == options.CustomerId);
             }
             if (options.OrderId != null)
             {
                 query = query.Where(
-                    c=>c.Id==options.OrderId);
+                    c => c.Id == options.OrderId);
             }
-            return query.ToList();
+            if (options.VatNumber != null)
+            {
+                query = query.Where(
+                  c => c.Customer.VatNumber.Equals(options.VatNumber));
+            }
+            return  ApiResult<IQueryable<Order>>.CreateSuccessful(query);
         }
+
     }
 }

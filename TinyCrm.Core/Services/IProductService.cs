@@ -1,7 +1,6 @@
 ﻿using TinyCrm.Core.Model.Options;
 using TinyCrm.Core.Model;
 using System;
-using System.Collections.Generic;
 
 namespace TinyCrm.Core.Services
 {
@@ -31,9 +30,7 @@ namespace TinyCrm.Core.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Product GetProductById(Guid id);
+        ApiResult<Product> GetProductById(Guid id);
         public int SumOfStocks();
-        public List<Product> SearchProduct
-            (SearchProductOptions searchProductOptions);
     }
 }

@@ -16,26 +16,7 @@ namespace TinyCrmConsole
     {
         static void Main(string[] args)
         {
-            using (var context = new TinyCrmDbContext()) {
-                IProductService productServices = 
-                    new ProductService(context);
-                //context.Add(
-                //    new Product
-                //    { 
-                //        Name="pc",
-                //        InStock=3,
-                //        Id ="123"
-                //    });
-                //context.Add(
-                //    new Product
-                //    {
-                //        Name = "mouse",
-                //        InStock = 5,
-                //        Id = "124"
-                //    });
-                //context.SaveChanges();
-                var sum = productServices.SumOfStocks();
-            }
+           
         }
     }
 }

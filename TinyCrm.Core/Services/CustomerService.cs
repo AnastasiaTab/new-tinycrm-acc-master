@@ -17,10 +17,30 @@ namespace TinyCrm.Core.Services
             context = dbContext;
         }
 
-        public List<Customer> Search(
+        public ApiResult<Customer> GetCustomerById(
+            int customerId)
+        {
+            var customer = Search(
+                new SearchCustomerOptions()
+                {
+                    Id = customerId
+                }).SingleOrDefault();
+
+            if (customer == null)
+            {
+                return new ApiResult<Customer>(
+                    StatusCode.NotFound, $"Customer {customerId} not found");
+            }
+
+            return ApiResult<Customer>.CreateSuccessful(customer);
+            
+        }
+
+        public IQueryable<Customer> Search(
             SearchCustomerOptions options)
         {
-            if (options == null) {
+            if (options == null)
+            {
                 return null;
             }
 
@@ -28,39 +48,48 @@ namespace TinyCrm.Core.Services
                 .Set<Customer>()
                 .AsQueryable();
 
-            if (options.Id != null) {
+            if (options.Id != null)
+            {
                 query = query.Where(
                     c => c.Id == options.Id);
             }
 
-            if (options.VatNumber != null) {
+            if (options.VatNumber != null)
+            {
                 query = query.Where(
                     c => c.VatNumber == options.VatNumber);
             }
 
-            if (options.Email != null) {
+            if (options.Email != null)
+            {
                 query = query.Where(
                     c => c.Email == options.Email);
             }
 
-            if (!string.IsNullOrWhiteSpace(options.FistName)) {
+            if (!string.IsNullOrWhiteSpace(options.FistName))
+            {
                 query = query
                       .Where(c => c.FirstName.Contains(options.FistName));
             }
 
-            return query.ToList();
+            return query;
         }
 
-        public Customer Create(CreateCustomerOptions options) 
+        public ApiResult<Customer> Create(
+            CreateCustomerOptions options)
         {
-           if (options == null) {
-                return null;
+            if (options == null)
+            {
+                return new ApiResult<Customer>(
+                    StatusCode.BadRequest, "null options");
             }
 
             if (string.IsNullOrWhiteSpace(options.Email) ||
                 !options.Email.Contains("@") ||
-                string.IsNullOrWhiteSpace(options.VatNumber)) {
-                return null;
+                string.IsNullOrWhiteSpace(options.VatNumber))
+            {
+                return new ApiResult<Customer>(
+                    StatusCode.BadRequest, "null or wrong options");
             }
 
             var customer = new Customer();
@@ -71,7 +100,7 @@ namespace TinyCrm.Core.Services
             context.Set<Customer>().Add(customer);
             context.SaveChanges();
 
-            return customer;
-        } 
+            return ApiResult<Customer>.CreateSuccessful(customer) ;
+        }
     }
 }
