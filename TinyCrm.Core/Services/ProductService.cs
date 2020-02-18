@@ -7,7 +7,7 @@ using System;
 
 namespace TinyCrm.Core.Services
 {
-      /// <summary>
+    /// <summary>
     /// 
     /// </summary>
     public class ProductService : IProductService
@@ -15,9 +15,9 @@ namespace TinyCrm.Core.Services
         private TinyCrm.Core.Data.TinyCrmDbContext context;
         public ProductService(Data.TinyCrmDbContext dbContext)
         {
-           context=dbContext;
+            context = dbContext;
         }
-        private List<Product> ProductsList = new List<Product>();
+
         /// <summary>
         /// 
         /// </summary>
@@ -25,35 +25,36 @@ namespace TinyCrm.Core.Services
         /// <returns></returns>
         public ApiResult<Product> AddProduct(AddProductOptions options)
         {
-            var result = new ApiResult<Product>();
+            //var result = new ApiResult<Product>();
 
-            if (options == null) {
-                result.ErrorCode = StatusCode.BadRequest;
-                result.ErrorText = "null options";
-                return result;
+            if (options == null)
+            {
+                return new ApiResult<Product>(
+                    StatusCode.BadRequest, "null options");
             }
 
-            if (string.IsNullOrWhiteSpace(options.Name)) {
-                result.ErrorCode = StatusCode.BadRequest;
-                result.ErrorText = "null or empty name";
-                return result;
+            if (string.IsNullOrWhiteSpace(options.Name))
+            {
+                return new ApiResult<Product>(
+                     StatusCode.BadRequest, "null or empty name");
             }
 
-            if (options.Price <= 0) {
-                result.ErrorCode = StatusCode.BadRequest;
-                result.ErrorText = "negative or zero price";
-                return result;
-               
+            if (options.Price <= 0)
+            {
+                return new ApiResult<Product>(
+                      StatusCode.BadRequest, "negative or zero price");
+
             }
 
             if (options.ProductCategory ==
-              ProductCategory.Invalid) {
-                result.ErrorCode = StatusCode.BadRequest;
-                result.ErrorText = "invalid category ";
-                return result;
+              ProductCategory.Invalid)
+            {
+                return new ApiResult<Product>(
+                    StatusCode.BadRequest, "invalid category");
             }
 
-            var product = new Product() {
+            var product = new Product()
+            {
                 Name = options.Name,
                 Price = options.Price,
                 Category = options.ProductCategory
@@ -62,9 +63,7 @@ namespace TinyCrm.Core.Services
             context.Add(product);
             context.SaveChanges();
 
-            result.ErrorCode = StatusCode.Success;
-            result.Data = product;
-            return result;
+            return ApiResult<Product>.CreateSuccessful(product);
         }
 
         /// <summary>
@@ -76,91 +75,76 @@ namespace TinyCrm.Core.Services
         public bool UpdateProduct(Guid productId,
             UpdateProductOptions options)
         {
-            if (options == null) {
+            if (options == null)
+            {
                 return false;
             }
 
-            var product = GetProductById(productId);
-            if (product == null) { 
-                return false; 
+            var presult = GetProductById(productId);
+            if (!presult.Success)
+            {
+                return false;
             }
+            var product = presult.Data;
 
-            if (!string.IsNullOrWhiteSpace(options.Description)) {
+            if (!string.IsNullOrWhiteSpace(options.Description))
+            {
                 product.Description = options.Description;
             }
 
             if (options.Price != null &&
-              options.Price <= 0) {
+              options.Price <= 0)
+            {
                 return false;
             }
 
-            if (options.Price != null) {
-                if (options.Price <= 0) {
+            if (options.Price != null)
+            {
+                if (options.Price <= 0)
+                {
                     return false;
-                } else {
+                }
+                else
+                {
                     product.Price = options.Price.Value;
                 }
             }
 
             if (options.Discount != null &&
-              options.Discount < 0) {
+              options.Discount < 0)
+            {
                 return false;
             }
 
             return true;
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Product GetProductById(Guid id)
+        public ApiResult<Product> GetProductById(Guid id)
         {
-            return context
+            var product = context
                 .Set<Product>()
                 .SingleOrDefault(s => s.Id == id);
+
+            if (product == null)
+            {
+                return new ApiResult<Product>(
+                    StatusCode.NotFound, $"Product {id} not found");
+            }
+
+            return ApiResult<Product>.CreateSuccessful(product);
         }
+
         public int SumOfStocks()
         {
             var sum = context.Set<Product>().AsQueryable().
                 Sum(c => c.InStock);
 
             return sum;
-        }
-        public List<Product> SearchProduct
-            (SearchProductOptions searchProductOptions)
-        {
-            if (searchProductOptions == null)
-            {
-                return null;
-            }
-
-            var query = context.Set<Product>().AsQueryable();
-
-            
-            if (searchProductOptions.Description != null)
-            {
-                query = query.
-                Where(c => c.Description == searchProductOptions.Description);
-            }
-            if (searchProductOptions != null &&
-                searchProductOptions.MaxPrice > 0)
-            {
-                query = query.
-                Where(c => c.Price <= searchProductOptions.MaxPrice);
-            }
-
-            if (searchProductOptions != null &&
-                searchProductOptions.MinPrice > 0)
-            {
-                query = query.
-                Where(c => c.Price >= searchProductOptions.MinPrice);
-            }
-            List<Product> products = query.ToList();
-            return products;
-
-
         }
     }
 }

@@ -10,6 +10,7 @@ namespace TinyCrm.Core.Model
         public DateTimeOffset CreatedDateTime { get; set; } 
         public Status Status { get; set; }
 
+
         public int CustomerId { get; set; }
         public Customer Customer { get; set; }
 
@@ -18,6 +19,8 @@ namespace TinyCrm.Core.Model
         public Order()
         {
             OrderProducts = new List<OrderProduct>();
+            CreatedDateTime = DateTimeOffset.Now;
+
         }
     }
 }

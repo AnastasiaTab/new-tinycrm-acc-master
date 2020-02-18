@@ -10,8 +10,8 @@ using TinyCrm.Core.Data;
 namespace TinyCrm.Core.Migrations
 {
     [DbContext(typeof(TinyCrmDbContext))]
-    [Migration("20200213194402_master")]
-    partial class master
+    [Migration("20200215172755_final")]
+    partial class final
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
